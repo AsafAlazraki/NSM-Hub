@@ -1,0 +1,19 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow public write access only for creating new booking applications.
+    // Deny read, update, delete for public.
+    match /bookingApplications/{applicationId} {
+      allow create;
+      allow read, update, delete: if request.auth != null;
+    }
+    
+    // For all other collections, allow full access for any authenticated user.
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
