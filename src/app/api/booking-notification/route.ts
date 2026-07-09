@@ -26,6 +26,13 @@ const section = (title: string, rows: string) => {
 };
 
 export async function POST(request: NextRequest) {
+    // Kill switch: booking notification emails are parked until explicitly
+    // enabled. Nothing is sent unless BOOKING_NOTIFICATIONS_ENABLED=true is
+    // set in the App Hosting environment.
+    if (process.env.BOOKING_NOTIFICATIONS_ENABLED !== 'true') {
+        return NextResponse.json({ sent: false, reason: 'Notifications disabled' }, { status: 200 });
+    }
+
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
         console.error('booking-notification: RESEND_API_KEY is not configured; skipping email.');
