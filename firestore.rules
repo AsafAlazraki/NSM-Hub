@@ -1,19 +1,119 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Allow public write access only for creating new booking applications.
-    // Deny read, update, delete for public.
-    match /bookingApplications/{applicationId} {
-      allow create;
-      allow read, update, delete: if request.auth != null;
+
+    /**
+     * NSM Service Quotation Security Rules
+     *
+     * CORE PHILOSOPHY:
+     * This ruleset promotes collaborative work within the staff.
+     * Shared collections like /quotes and /catalogue* are accessible to all authenticated users.
+     * User profiles and legacy hierarchical paths remain owner-restricted.
+     */
+
+    // --- Helper Functions ---
+
+    function isSignedIn() {
+      return request.auth != null;
     }
-    
-    // For all other collections, allow full access for any authenticated user.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // --- Collection Rules ---
+
+    // User profiles
+    match /users/{userId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isOwner(userId);
+      allow delete: if false;
+    }
+
+    // Quotes (Shared collection for service estimates)
+    // Allows collaborative editing by any signed-in staff member.
+    match /quotes/{quoteId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    // Catalogue Collections
+    match /catalogueOperations/{opId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    match /catalogueParts/{partId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    match /dealerFitParts/{partId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    match /dealerFitCategories/{catId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    match /dealerFitBrands/{brandId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    // Settings (Logo, etc.)
+    match /settings/{settingId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    // Booking Applications
+    // The public booking form is submitted by anonymous customers, so
+    // anyone may CREATE an application — but only as a fresh
+    // 'Awaiting Confirmation' entry. Everything else requires sign-in.
+    match /bookingApplications/{appId} {
+      allow create: if request.resource.data.status == 'Awaiting Confirmation';
+      allow get, list, update, delete: if isSignedIn();
+    }
+
+    // Diagnostic Reports
+    match /diagnosticReports/{reportId} {
+      allow get, list, create, update, delete: if isSignedIn();
+    }
+
+    // --- Legacy / Hierarchical Paths (kept for compatibility) ---
+
+    match /userProfiles/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/customers/{customerId} {
+      allow get, list: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+
+      match /boats/{boatId} {
+        allow get, list: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId);
+      }
+    }
+
+    match /users/{userId}/quotations/{quotationId} {
+      allow get, list: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+
+      match /operations/{operationId} {
+        allow get, list: if isOwner(userId);
+        allow create, update, delete: if isOwner(userId);
+
+        match /laborItems/{laborItemId} {
+          allow get, list: if isOwner(userId);
+          allow create, update, delete: if isOwner(userId);
+        }
+
+        match /partItems/{partItemId} {
+          allow get, list: if isOwner(userId);
+          allow create, update, delete: if isOwner(userId);
+        }
+      }
     }
   }
 }
