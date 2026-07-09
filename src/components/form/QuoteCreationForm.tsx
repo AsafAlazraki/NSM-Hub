@@ -192,7 +192,10 @@ export const QuoteCreationForm = ({ initialData, isEditMode = false }: QuoteCrea
     }
     setIsSaving(true);
     try {
-        const finalQuoteData: Quote = { ...quoteData, userId: user.uid } as Quote;
+        // Keep the quote assigned to its existing owner so editing another
+        // user's quote doesn't silently transfer it to the editor. Only fall
+        // back to the current user for quotes that don't have an owner yet.
+        const finalQuoteData: Quote = { ...quoteData, userId: quoteData.userId || user.uid } as Quote;
         await saveQuote(finalQuoteData, true); // Always treat as update now
       
       toast({

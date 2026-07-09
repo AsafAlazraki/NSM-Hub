@@ -382,7 +382,7 @@ export const deleteQuotes = async (quoteIds: string[]): Promise<void> => {
         const batch = writeBatch(db);
         quoteIds.forEach(id => {
             const quoteDocRef = doc(db, 'quotes', id);
-            batch.delete(docRef);
+            batch.delete(quoteDocRef);
         });
         await batch.commit();
     } catch (e) {
