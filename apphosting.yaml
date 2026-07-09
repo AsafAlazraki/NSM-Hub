@@ -7,11 +7,12 @@ runConfig:
   maxInstances: 1
 
 env:
-  # Resend API key for booking notification emails. Create the secret BEFORE
-  # deploying (rollouts fail if it is missing):
-  #   firebase apphosting:secrets:set RESEND_API_KEY --project nsm-service-quotation
+  # Resend API key for booking notification emails, stored in Google Secret
+  # Manager (never in the repo — it is public).
   - variable: RESEND_API_KEY
     secret: RESEND_API_KEY
+    availability:
+      - RUNTIME
 
   # Resend only delivers from the default onboarding@resend.dev sender to the
   # account owner's own address. Once nsmaine.com.au is verified at
