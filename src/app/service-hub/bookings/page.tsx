@@ -404,52 +404,61 @@ function BookingsPageContent() {
     return (
         <div className="flex flex-col h-screen">
             <Header>
-                <div className="flex items-center gap-4 flex-wrap">
-                    <Button asChild variant="outline">
-                        <Link href="/service-hub"><ArrowLeft /> Back to Service Hub</Link>
-                    </Button>
-                    <h1 className="text-xl font-semibold">{showArchived ? 'Archived Applications' : 'Booking Applications'}</h1>
-                    {showArchived && selectedApplications.length > 0 && (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive">
-                                    <Trash2 /> Delete ({selectedApplications.length})
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This will permanently delete {selectedApplications.length} application(s). This action cannot be undone.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleBulkDelete}>Delete Applications</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
-                    {!showArchived && (
-                        <>
-                            <Button onClick={handleCopyLink} variant="secondary">
-                                <Copy /> Copy Public Link
-                            </Button>
-                            <Button asChild>
-                                <Link href="/booking-application/new">
-                                    <PlusCircle /> New Application
-                                </Link>
-                            </Button>
-                        </>
-                    )}
-                    <Button variant="ghost" onClick={handleArchiveClick}>
-                        {showArchived ? <><ArrowLeft /> Back to Applications</> : <><Archive /> View Bin ({archivedApplications.length})</>}
-                    </Button>
-                </div>
+                <Button asChild variant="outline">
+                    <Link href="/service-hub"><ArrowLeft /> Back to Service Hub</Link>
+                </Button>
             </Header>
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
                 <div className="mb-8 space-y-8">
+                    <div className="flex flex-wrap justify-between items-center gap-4">
+                        <div>
+                            <h1 className="text-3xl font-headline font-bold">{showArchived ? 'Archived Applications' : 'Booking Applications'}</h1>
+                            <p className="text-muted-foreground">
+                                {showArchived
+                                    ? 'Restore applications or permanently delete them.'
+                                    : 'Manage booking forms and view submissions.'}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            {showArchived && selectedApplications.length > 0 && (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive">
+                                            <Trash2 /> Delete ({selectedApplications.length})
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This will permanently delete {selectedApplications.length} application(s). This action cannot be undone.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleBulkDelete}>Delete Applications</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            )}
+                            {!showArchived && (
+                                <>
+                                    <Button onClick={handleCopyLink} variant="secondary">
+                                        <Copy /> Copy Public Link
+                                    </Button>
+                                    <Button asChild>
+                                        <Link href="/booking-application/new">
+                                            <PlusCircle /> New Application
+                                        </Link>
+                                    </Button>
+                                </>
+                            )}
+                            <Button variant="ghost" onClick={handleArchiveClick}>
+                                {showArchived ? <><ArrowLeft /> Back to Applications</> : <><Archive /> View Bin ({archivedApplications.length})</>}
+                            </Button>
+                        </div>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="lg:col-span-2">
                             <div className="relative">
