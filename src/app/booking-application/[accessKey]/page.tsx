@@ -78,12 +78,12 @@ export default function BookingApplicationPage() {
             description: 'The booking application link is invalid or expired. Please contact support.',
             variant: 'destructive',
           });
-          router.replace('/bookings');
+          router.replace('/service-hub/bookings');
         }
       } else if (accessKeyFromUrl === 'new') {
         setIsNewApplicationMode(true);
       } else {
-        router.replace('/bookings');
+        router.replace('/service-hub/bookings');
       }
       setLoading(false);
     }
@@ -127,7 +127,7 @@ export default function BookingApplicationPage() {
       <div className="flex flex-col min-h-screen bg-muted/40">
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
             <Button asChild variant="outline">
-                <Link href="/bookings"><ArrowLeft /> Back to Applications</Link>
+                <Link href="/service-hub/bookings"><ArrowLeft /> Back to Applications</Link>
             </Button>
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
