@@ -1,5 +1,5 @@
 import { db } from './firebase';
-import { collection, doc, getDoc, setDoc, addDoc, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, setDoc, addDoc, query, getDocs, orderBy, Timestamp, writeBatch } from 'firebase/firestore';
 import { BookingApplication, BookingApplicationStatus } from './types';
 
 const BOOKING_APPLICATIONS_COLLECTION = 'bookingApplications';
@@ -110,5 +110,42 @@ export async function getAllBookingApplications(): Promise<BookingApplication[]>
   } catch (error) {
     console.error("Error getting all booking applications:", error);
     return [];
+  }
+}
+
+export async function deleteBookingApplication(id: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, BOOKING_APPLICATIONS_COLLECTION, id);
+    await setDoc(docRef, { deleted: true, updatedAt: Timestamp.now() }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error deleting booking application:", error);
+    return false;
+  }
+}
+
+export async function restoreBookingApplication(id: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, BOOKING_APPLICATIONS_COLLECTION, id);
+    await setDoc(docRef, { deleted: false, updatedAt: Timestamp.now() }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error restoring booking application:", error);
+    return false;
+  }
+}
+
+export async function permanentlyDeleteBookingApplications(ids: string[]): Promise<boolean> {
+  if (ids.length === 0) return true;
+  try {
+    const batch = writeBatch(db);
+    ids.forEach(id => {
+      batch.delete(doc(db, BOOKING_APPLICATIONS_COLLECTION, id));
+    });
+    await batch.commit();
+    return true;
+  } catch (error) {
+    console.error("Error permanently deleting booking applications:", error);
+    return false;
   }
 }

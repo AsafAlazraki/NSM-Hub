@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Logo } from '../Logo';
 import { useToast } from '@/hooks/use-toast';
-import { createBookingApplication } from '@/lib/booking-application-storage';
+import { createBookingApplication, updateBookingApplication } from '@/lib/booking-application-storage';
+import type { BookingApplication } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 
 import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
@@ -59,19 +60,41 @@ type BookingFormValues = z.infer<typeof bookingFormSchema>;
 interface BookingFormProps {
   formId: string; // The accessKey or 'new'
   logo: string | null;
+  initialData?: BookingApplication; // When set, the form edits this application instead of creating one
 }
 
 const TOTAL_STEPS = 5;
 
-export function BookingForm({ formId, logo }: BookingFormProps) {
+export function BookingForm({ formId, logo, initialData }: BookingFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isEditMode = !!initialData?.id;
 
   const methods = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     mode: 'onChange',
+    defaultValues: initialData ? {
+      customerName: initialData.customerName || '',
+      customerAddress: initialData.customerAddress || '',
+      customerMobileNumber: initialData.customerMobileNumber || '',
+      customerEmail: initialData.customerEmail || '',
+      boatMake: initialData.boatMake || '',
+      boatModel: initialData.boatModel || '',
+      boatHin: initialData.boatHin || '',
+      boatRegistrationNumber: initialData.boatRegistrationNumber || '',
+      engineMake: initialData.engineMake || '',
+      engineModel: initialData.engineModel || '',
+      engineSerialNumber: initialData.engineSerialNumber || '',
+      trailerMake: initialData.trailerMake || '',
+      trailerModel: initialData.trailerModel || '',
+      trailerVin: initialData.trailerVin || '',
+      trailerRegistration: initialData.trailerRegistration || '',
+      workToBePerformed: initialData.workToBePerformed || '',
+      bookingDateRequested: initialData.bookingDateRequested || '',
+      dateRequiredForCollection: initialData.dateRequiredForCollection || '',
+    } : undefined,
   });
 
   const { trigger } = methods;
@@ -107,22 +130,34 @@ export function BookingForm({ formId, logo }: BookingFormProps) {
   const onSubmit = async (data: BookingFormValues) => {
     setIsSubmitting(true);
     try {
-        const newApplication = await createBookingApplication(data);
-        if (newApplication) {
+        if (isEditMode) {
+            const success = await updateBookingApplication(initialData!.id!, data);
+            if (!success) throw new Error("Failed to update application in database.");
             toast({
-                title: "Booking Submitted",
-                description: "Thank you! We have received your booking application.",
+                title: "Application Updated",
+                description: "The booking application has been saved.",
             });
-            router.push(`/booking-application/${newApplication.id}`);
+            router.push(`/booking-application/${initialData!.id}`);
         } else {
-            throw new Error("Failed to create application in database.");
+            const newApplication = await createBookingApplication(data);
+            if (newApplication) {
+                toast({
+                    title: "Booking Submitted",
+                    description: "Thank you! We have received your booking application.",
+                });
+                router.push(`/booking-application/${newApplication.id}`);
+            } else {
+                throw new Error("Failed to create application in database.");
+            }
         }
     } catch (error) {
-        console.error("Failed to create booking application:", error);
+        console.error("Failed to save booking application:", error);
         toast({
             variant: "destructive",
-            title: "Submission Error",
-            description: "Could not submit your booking. Please try again later.",
+            title: isEditMode ? "Save Error" : "Submission Error",
+            description: isEditMode
+                ? "Could not save the application. Please try again later."
+                : "Could not submit your booking. Please try again later.",
         });
     } finally {
         setIsSubmitting(false);
@@ -149,7 +184,7 @@ export function BookingForm({ formId, logo }: BookingFormProps) {
           <Logo logo={logo} />
         </div>
         <CardTitle className="text-2xl font-headline">
-            Booking Application
+            {isEditMode ? 'Edit Booking Application' : 'Booking Application'}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 sm:p-6">
@@ -170,7 +205,9 @@ export function BookingForm({ formId, logo }: BookingFormProps) {
                     </Button>
                 ) : (
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Submitting...' : 'Submit Application'} <Send />
+                        {isSubmitting
+                            ? (isEditMode ? 'Saving...' : 'Submitting...')
+                            : (isEditMode ? 'Save Changes' : 'Submit Application')} <Send />
                     </Button>
                 )}
             </div>

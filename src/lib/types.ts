@@ -439,6 +439,7 @@ export interface BookingApplication {
   updatedAt?: Timestamp;
   status: BookingApplicationStatus; // For internal staff tracking
   staffNotes?: string; // Internal notes by staff
+  deleted?: boolean; // Soft-deleted (in the bin); restorable until permanently deleted
 }
 
 // CPQ Specific Types
