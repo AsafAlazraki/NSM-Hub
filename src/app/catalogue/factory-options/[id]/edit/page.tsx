@@ -58,6 +58,7 @@ const factoryOptionSchema = z.object({
   tag: optionTagSchema.optional(),
 });
 type FactoryOptionFormValues = z.infer<typeof factoryOptionSchema>;
+type FactoryOptionFormInput = z.input<typeof factoryOptionSchema>;
 
 
 const formatCurrency = (value: number) => {
@@ -92,7 +93,7 @@ const FactoryOptionFormDialog = ({
     const [lastEditedField, setLastEditedField] = useState<'gpPercentage' | 'sellPrice' | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    const form = useForm<FactoryOptionFormValues>({
+    const form = useForm<FactoryOptionFormInput, any, FactoryOptionFormValues>({
         resolver: zodResolver(factoryOptionSchema),
     });
     

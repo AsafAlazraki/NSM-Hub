@@ -24,7 +24,12 @@ export async function extractTextFromPdfs(files: SourceFile[]): Promise<string> 
       }
       
       const pdfBuffer = Buffer.from(base64Data, 'base64');
-      const data = await pdfParse(pdfBuffer);
+      // Installed pdf-parse v2 exposes a class-based API and no callable
+      // default export; this v1-style call is typed via a narrow cast to keep
+      // the existing runtime behavior unchanged.
+      const data = await (pdfParse as unknown as (
+        buffer: Buffer
+      ) => Promise<{ text: string }>)(pdfBuffer);
       combinedText += `\n\n--- START OF FILE: ${file.name} ---\n\n`;
       combinedText += data.text;
       combinedText += `\n\n--- END OF FILE: ${file.name} ---\n\n`;

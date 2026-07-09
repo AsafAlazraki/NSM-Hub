@@ -14,7 +14,7 @@ const formatCurrency = (value: number) => {
 
 interface ConsoleOptionsProps {
     selectedModel: BoatModel | null;
-    selectedConsole: BoatModel['consoleOptions'][0] | null;
+    selectedConsole: NonNullable<BoatModel['consoleOptions']>[number] | null;
     handleConsoleSelection: (consoleName: string) => void;
 }
 

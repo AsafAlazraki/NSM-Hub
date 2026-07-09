@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuoteForm } from './QuoteCreationForm';
-import type { UserDetails } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -19,7 +18,7 @@ const userDetailsSchema = z.object({
   role: z.string().optional(),
 });
 
-type FormValues = Omit<UserDetails, 'ref'>;
+type FormValues = z.infer<typeof userDetailsSchema>;
 
 export default function StepUserDetails() {
   const { quoteData, setQuoteData, handleNext, isEditMode } = useQuoteForm();
@@ -64,7 +63,9 @@ export default function StepUserDetails() {
         <div>
             <CardTitle className="font-headline text-2xl">User Details</CardTitle>
             <CardDescription>
-             {isEditMode ? 'Edit the user details for this quote.' : 'Enter the user details for this quote.'}
+             {isEditMode
+                ? 'These are the details of the user this quote is assigned to. To reassign the quote to a different user, use "Change Assigned User" on the quote page.'
+                : 'Enter the user details for this quote.'}
             </CardDescription>
         </div>
       </CardHeader>
@@ -76,9 +77,9 @@ export default function StepUserDetails() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Name</FormLabel>
+                  <FormLabel>{isEditMode ? "Assigned User's Name" : 'Your Name'}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Your full name" />
+                    <Input {...field} placeholder="Full name" disabled={isEditMode} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -89,9 +90,9 @@ export default function StepUserDetails() {
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Role</FormLabel>
+                  <FormLabel>{isEditMode ? 'Role' : 'Your Role'}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g., Service Manager" />
+                    <Input {...field} placeholder="e.g., Service Manager" disabled={isEditMode} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,9 +103,9 @@ export default function StepUserDetails() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Phone</FormLabel>
+                  <FormLabel>{isEditMode ? 'Phone' : 'Your Phone'}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Your phone number" />
+                    <Input {...field} placeholder="Phone number" disabled={isEditMode} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,9 +116,9 @@ export default function StepUserDetails() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Your Email</FormLabel>
+                  <FormLabel>{isEditMode ? 'Email' : 'Your Email'}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="your.email@example.com" />
+                    <Input {...field} placeholder="email@example.com" disabled={isEditMode} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

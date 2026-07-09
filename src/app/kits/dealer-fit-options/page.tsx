@@ -10,8 +10,11 @@ import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
-import type { DealerFitCategory, DealerFitPart } from '@/lib/types';
-import { getDealerFitCategories, saveDealerFitCategory, deleteDealerFitCategory, getDealerFitParts, saveDealerFitPart, deleteDealerFitPart, saveDealerFitParts, deleteDealerFitParts } from '@/lib/storage';
+import type { DealerFitCategory, DealerFitPart, UserProfile } from '@/lib/types';
+import { getDealerFitCategories, saveDealerFitCategory, deleteDealerFitCategory, getDealerFitParts, saveDealerFitPart, deleteDealerFitPart, saveDealerFitParts, deleteDealerFitParts, getStaticLogo, getUserProfile } from '@/lib/storage';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { UserProfileDialog } from '@/components/UserProfileDialog';
+import { getAuth, signOut } from 'firebase/auth';
 import { PlusCircle, MoreVertical, Edit, Trash2, ArrowLeft, ChevronDown, Upload, Search, List, LayoutGrid, Save } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -54,6 +57,7 @@ const partSchema = z.object({
   sellPrice: z.coerce.number().min(0).default(0),
 });
 type PartFormValues = z.infer<typeof partSchema>;
+type PartFormInput = z.input<typeof partSchema>;
 
 const bulkPartsSchema = z.object({
     pastedData: z.string().min(1, "Please paste data from your spreadsheet."),
@@ -102,7 +106,7 @@ const CategoryFormDialog = ({ isOpen, setIsOpen, onSave, initialName = '' }: { i
 }
 
 const PartFormDialog = ({ isOpen, setIsOpen, onSave, categoryId, initialData }: { isOpen: boolean, setIsOpen: (open: boolean) => void, onSave: (part: PartFormValues) => void, categoryId: string, initialData?: DealerFitPart | null }) => {
-     const form = useForm<PartFormValues>({
+     const form = useForm<PartFormInput, any, PartFormValues>({
         resolver: zodResolver(partSchema),
         defaultValues: initialData || { name: '', supplier: '', code: '', partNumber: '', pa: 0, cost: 0, mu: 0, gp: 0, sellPrice: 0},
     });
@@ -279,7 +283,7 @@ const TableView = ({ currentParts, categories, onSave, onAddNewPart, selectedPar
                                     />
                                 </TableCell>
                                 <TableCell>
-                                    <Select value={part.categoryId} onValueChange={(value) => handleInputChange(part.id!, 'categoryId', value)}>
+                                    <Select value={part.categoryId ?? undefined} onValueChange={(value) => handleInputChange(part.id!, 'categoryId', value)}>
                                         <SelectTrigger className="min-w-[150px]">
                                             <SelectValue placeholder="Select category" />
                                         </SelectTrigger>
@@ -340,7 +344,7 @@ const TableView = ({ currentParts, categories, onSave, onAddNewPart, selectedPar
     )
 }
 
-export default function DealerFitOptionsPage() {
+function DealerFitOptionsPageContent() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
@@ -806,3 +810,74 @@ export default function DealerFitOptionsPage() {
 }
 
     
+export default function DealerFitOptionsPage() {
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
+    const auth = getAuth();
+    const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
+    const [currentUserProfile, setCurrentUserProfile] = useState<UserProfile | null>(null);
+    const [logo, setLogo] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/login');
+        }
+    }, [user, authLoading, router]);
+
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            if(user) {
+                const [profile, staticLogo] = await Promise.all([
+                    getUserProfile(user.uid),
+                    getStaticLogo()
+                ]);
+                setCurrentUserProfile(profile);
+                setLogo(staticLogo);
+            }
+        }
+        fetchInitialData();
+    }, [user]);
+
+    const handleSignOut = async () => {
+        await signOut(auth);
+        if(typeof window !== 'undefined') {
+            sessionStorage.removeItem('quoteSearchTerm');
+            sessionStorage.removeItem('quoteStatusFilter');
+            sessionStorage.removeItem('quoteOpenClosedFilter');
+            sessionStorage.removeItem('quoteUserFilter');
+            sessionStorage.removeItem('quoteUserFilterDefaultSet');
+            sessionStorage.removeItem('quoteTypeFilter');
+        }
+        router.push('/login');
+    };
+
+    if (authLoading || !user) {
+        return (
+             <SidebarProvider>
+                <div className="flex flex-col h-screen">
+                    <Header />
+                    <main className="flex-1 p-8"><Skeleton className="h-full w-full" /></main>
+                </div>
+            </SidebarProvider>
+        );
+    }
+
+    return (
+        <SidebarProvider
+            logo={logo}
+            onSignOut={handleSignOut}
+            onProfileClick={() => setIsProfileDialogOpen(true)}
+            currentUserProfile={currentUserProfile}
+        >
+            {currentUserProfile && (
+                <UserProfileDialog
+                    isOpen={isProfileDialogOpen}
+                    setIsOpen={setIsProfileDialogOpen}
+                    userProfile={currentUserProfile}
+                    onSave={() => {}}
+                />
+            )}
+            <DealerFitOptionsPageContent />
+        </SidebarProvider>
+    );
+}

@@ -1,63 +1,36 @@
 
 "use client";
 
-import { Header } from "@/components/Header";
-import { KitCreationForm } from "@/components/kits/KitCreationForm";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 import { getStaticLogo, getUserProfile } from "@/lib/storage";
 import type { UserProfile } from "@/lib/types";
+import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { QuoteCreationForm } from "@/components/form/QuoteCreationForm";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { UserProfileDialog } from "@/components/UserProfileDialog";
 import { getAuth, signOut } from "firebase/auth";
+import { UserProfileDialog } from "@/components/UserProfileDialog";
 
-function NewKitPageContent() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  if (loading || !user) {
+function NewQuotePageContent() {
     return (
-      <div className="flex flex-col h-full">
-        <Header>
-            <Button variant="ghost" asChild>
-                <Link href="/kits">Cancel</Link>
-            </Button>
-        </Header>
-        <main className="flex-1 container mx-auto max-w-5xl py-8 px-4">
-          <div className="space-y-8">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-[600px] w-full" />
-          </div>
-        </main>
-      </div>
+        <div className="flex flex-col h-full">
+            <Header>
+                <Button variant="ghost" asChild>
+                    <Link href="/service-hub/estimates">Cancel</Link>
+                </Button>
+            </Header>
+            <main className="flex-1">
+                <QuoteCreationForm />
+            </main>
+        </div>
     );
-  }
-
-  return (
-    <div className="flex flex-col h-full">
-      <Header>
-          <Button variant="ghost" asChild>
-              <Link href="/kits">Cancel</Link>
-          </Button>
-      </Header>
-      <main className="flex-1">
-        <KitCreationForm />
-      </main>
-    </div>
-  );
 }
 
-export default function NewKitPage() {
+export default function NewQuotePage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const auth = getAuth();
@@ -124,7 +97,7 @@ export default function NewKitPage() {
                     onSave={() => {}}
                 />
             )}
-            <NewKitPageContent />
+            <NewQuotePageContent />
         </SidebarProvider>
     );
 }

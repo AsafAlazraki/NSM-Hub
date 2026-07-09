@@ -143,7 +143,7 @@ export default function StepChecklistItems() {
         
         let parent = newItems;
         if (pathParts.length > 0) {
-            parent = pathParts.reduce((acc, part) => acc[part], { children: newItems }).children;
+            parent = pathParts.reduce((acc: any, part) => acc[part], { children: newItems }).children;
         }
 
         parent.splice(indexToRemove, 1);
@@ -159,7 +159,7 @@ export default function StepChecklistItems() {
             newItems.push(newItem);
         } else {
              const pathParts = path.split('.');
-             const parent = pathParts.reduce((acc, part) => acc[part], { children: newItems });
+             const parent = pathParts.reduce((acc: any, part) => acc[part], { children: newItems });
              if(!parent.children) parent.children = [];
              parent.children.push(newItem);
         }
@@ -179,7 +179,7 @@ export default function StepChecklistItems() {
         let sourceParent = newItems;
         if(source.droppableId !== 'toplevel') {
             const pathParts = source.droppableId.replace('children-of-', '').split('.');
-            sourceParent = pathParts.reduce((acc, part) => acc[part], { children: newItems }).children;
+            sourceParent = pathParts.reduce((acc: any, part: string) => acc[part], { children: newItems }).children;
         }
 
         const [removed] = sourceParent.splice(source.index, 1);
@@ -187,7 +187,7 @@ export default function StepChecklistItems() {
         let destParent = newItems;
         if(destination.droppableId !== 'toplevel') {
             const pathParts = destination.droppableId.replace('children-of-', '').split('.');
-            destParent = pathParts.reduce((acc, part) => acc[part], { children: newItems }).children;
+            destParent = pathParts.reduce((acc: any, part: string) => acc[part], { children: newItems }).children;
         }
         
         destParent.splice(destination.index, 0, removed);
@@ -217,7 +217,7 @@ export default function StepChecklistItems() {
                 path=""
                 onUpdate={handleUpdateItem}
                 onRemove={handleRemoveItem}
-                onAddChild={(path) => handleAddItem(path)}
+                onAddChild={(path: string) => handleAddItem(path)}
             />
         </DragDropContext>
       <div className="flex justify-between mt-8">

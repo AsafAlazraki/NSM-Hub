@@ -36,6 +36,7 @@ const riggingKitSchema = z.object({
 });
 
 type RiggingKitFormValues = z.infer<typeof riggingKitSchema>;
+type RiggingKitFormInput = z.input<typeof riggingKitSchema>;
 
 function formatCurrency(value: number) {
     if (isNaN(value)) return '$0.00';
@@ -55,7 +56,7 @@ function EditRiggingKitPageContent() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [lastEditedField, setLastEditedField] = useState<'gpPercentage' | 'sellPrice' | null>(null);
 
-    const form = useForm<RiggingKitFormValues>({
+    const form = useForm<RiggingKitFormInput, any, RiggingKitFormValues>({
         resolver: zodResolver(riggingKitSchema),
         defaultValues: { name: '', basePrice: 0, sellPrice: 0, gpPercentage: 0 },
     });
@@ -84,16 +85,16 @@ function EditRiggingKitPageContent() {
     const imageUrl = watch('imageUrl');
 
     useEffect(() => {
-      if (basePrice > 0) {
+      if (basePrice !== undefined && basePrice > 0) {
         if (lastEditedField === 'gpPercentage') {
-          const newSellPrice = basePrice / (1 - gpPercentage / 100);
-          if (!isNaN(newSellPrice) && Math.abs(newSellPrice - sellPrice) > 0.01) {
+          const newSellPrice = basePrice / (1 - Number(gpPercentage) / 100);
+          if (!isNaN(newSellPrice) && Math.abs(newSellPrice - Number(sellPrice)) > 0.01) {
             setValue('sellPrice', parseFloat(newSellPrice.toFixed(2)));
           }
         } else if (lastEditedField === 'sellPrice') {
-          if (sellPrice > 0) {
+          if (sellPrice !== undefined && sellPrice > 0) {
             const newGp = ((sellPrice - basePrice) / sellPrice) * 100;
-            if (!isNaN(newGp) && Math.abs(newGp - gpPercentage) > 0.01) {
+            if (!isNaN(newGp) && Math.abs(newGp - Number(gpPercentage)) > 0.01) {
                 setValue('gpPercentage', parseFloat(newGp.toFixed(2)));
             }
           }
@@ -191,7 +192,7 @@ function EditRiggingKitPageContent() {
                                     <FormField control={form.control} name="sellPrice" render={({ field }) => ( <FormItem><FormLabel>Sell Price</FormLabel><FormControl><Input type="number" {...field} onChange={(e) => { field.onChange(e); setLastEditedField('sellPrice'); }} /></FormControl><FormMessage /></FormItem> )} />
                                     <div>
                                         <Label>Gross Profit ($)</Label>
-                                        <Input readOnly disabled value={formatCurrency(watch('sellPrice') - watch('basePrice'))} />
+                                        <Input readOnly disabled value={formatCurrency(Number(watch('sellPrice')) - Number(watch('basePrice')))} />
                                     </div>
                                 </div>
                             </CardContent>

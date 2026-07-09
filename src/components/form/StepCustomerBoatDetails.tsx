@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuoteForm } from './QuoteCreationForm';
-import type { Customer, Boat, Motor, Trailer, UserDetails, Quote, EstimateType } from '@/lib/types';
+import type { Quote, EstimateType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -55,14 +55,7 @@ const customerBoatSchema = z.object({
 });
 
 
-type FormValues = {
-  user: Pick<UserDetails, 'ref'>;
-  customer: Customer;
-  boat: Boat;
-  motors: Motor[];
-  trailer: Trailer;
-  estimateType: EstimateType;
-}
+type FormValues = z.infer<typeof customerBoatSchema>;
 
 interface StepCustomerBoatDetailsProps {
     quoteData: Partial<Quote>;
@@ -135,10 +128,25 @@ export default function StepCustomerBoatDetails({ quoteData }: StepCustomerBoatD
         ref: fullRef,
       },
       customer: data.customer,
-      boat: data.boat,
+      // These fields are registered inputs with string defaults, so they are
+      // never undefined at runtime; `?? ''` only widens the schema's optional
+      // types to the required string fields on Boat/Trailer.
+      boat: {
+        make: data.boat.make ?? '',
+        model: data.boat.model ?? '',
+        registration: data.boat.registration ?? '',
+        hin: data.boat.hin ?? '',
+        insuranceRef: data.boat.insuranceRef ?? '',
+      },
       motors: data.motors,
-      trailer: data.trailer,
-      estimateType: data.estimateType,
+      trailer: {
+        make: data.trailer.make ?? '',
+        model: data.trailer.model ?? '',
+        registration: data.trailer.registration ?? '',
+        vin: data.trailer.vin,
+      },
+      // The Select only offers EstimateType values, so this narrowing is safe.
+      estimateType: data.estimateType as EstimateType,
     }));
     handleNext();
   };
