@@ -3,7 +3,7 @@
 
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import type { BoatModel, BoatRange } from '@/lib/types';
+import type { BoatModel, BoatRange, ColorOption } from '@/lib/types';
 import { Card, CardContent } from '../ui/card';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../ui/collapsible';
 import { ChevronDown } from 'lucide-react';
@@ -15,17 +15,39 @@ const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(value);
 }
 
-export const HullOptions = ({ 
-    models, 
-    ranges, 
-    selectedRangeId, 
-    selectedModelId, 
-    handleRangeSelection, 
-    handleModelSelection, 
-    selectedColor, 
-    handleColorChange, 
-    selectedModel, 
-    selectedMaterial, 
+type HullStep = 'hull-range' | 'hull-model' | 'hull-material' | 'hull-color';
+
+interface HullOptionsProps {
+    models: BoatModel[];
+    ranges: BoatRange[];
+    selectedRangeId: string | null;
+    selectedModelId: string | null;
+    handleRangeSelection: (rangeId: string) => void;
+    handleModelSelection: (modelId: string) => void;
+    selectedColor: ColorOption | null;
+    handleColorChange: (colorName: string) => void;
+    selectedModel: BoatModel | null;
+    selectedMaterial: string | null;
+    handleMaterialChange: (material: string) => void;
+    activeHullStep: HullStep | null;
+    setActiveHullStep: (step: HullStep | null) => void;
+    hullIncludesPreDelivery: boolean;
+    setHullIncludesPreDelivery: (checked: boolean) => void;
+    hullIncludesRegistration: boolean;
+    setHullIncludesRegistration: (checked: boolean) => void;
+}
+
+export const HullOptions = ({
+    models,
+    ranges,
+    selectedRangeId,
+    selectedModelId,
+    handleRangeSelection,
+    handleModelSelection,
+    selectedColor,
+    handleColorChange,
+    selectedModel,
+    selectedMaterial,
     handleMaterialChange,
     activeHullStep,
     setActiveHullStep,
@@ -33,7 +55,7 @@ export const HullOptions = ({
     setHullIncludesPreDelivery,
     hullIncludesRegistration,
     setHullIncludesRegistration,
-}) => {
+}: HullOptionsProps) => {
     const modelsForSelectedRange = selectedRangeId ? models.filter(m => m.rangeId === selectedRangeId) : [];
 
     const handleOpenChange = (step: 'hull-range' | 'hull-model' | 'hull-material' | 'hull-color', isOpen: boolean) => {

@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuoteForm } from './QuoteCreationForm';
-import type { UserDetails } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -19,7 +18,7 @@ const userDetailsSchema = z.object({
   role: z.string().optional(),
 });
 
-type FormValues = Omit<UserDetails, 'ref'>;
+type FormValues = z.infer<typeof userDetailsSchema>;
 
 export default function StepUserDetails() {
   const { quoteData, setQuoteData, handleNext, isEditMode } = useQuoteForm();

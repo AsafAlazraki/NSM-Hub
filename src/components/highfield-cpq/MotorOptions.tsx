@@ -57,7 +57,9 @@ export const MotorOptions = ({ compatibleMotors, selectedMotor, handleMotorSelec
         return <p className="p-4 text-center text-muted-foreground">No compatible motors for this model.</p>;
     }
     
-    const selectedPropellerId = typeof selectedPropeller === 'object' && selectedPropeller !== null && 'id' in selectedPropeller ? selectedPropeller.id : (selectedPropeller || '');
+    // The `'id' in` check doesn't narrow `Propeller` out of the false branch (id is an
+    // optional property), so assert the only values that can actually reach it: 'N/A' | null.
+    const selectedPropellerId = typeof selectedPropeller === 'object' && selectedPropeller !== null && 'id' in selectedPropeller ? selectedPropeller.id : ((selectedPropeller as 'N/A' | null) || '');
 
 
     return (

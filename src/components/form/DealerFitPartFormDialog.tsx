@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -58,7 +58,10 @@ export const DealerFitPartFormDialog = ({
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const form = useForm<DealerFitPartFormValues>({
-        resolver: zodResolver(dealerFitPartSchema),
+        // The schema's `.coerce`/`.default()` fields make zod's input type wider
+        // than its output type, but the shared FormField component requires a
+        // single form-values type; cast the resolver to the output type here.
+        resolver: zodResolver(dealerFitPartSchema) as Resolver<DealerFitPartFormValues>,
     });
     
     React.useEffect(() => {

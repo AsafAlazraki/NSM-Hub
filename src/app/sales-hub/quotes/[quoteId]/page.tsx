@@ -346,7 +346,9 @@ function BmtQuoteSummaryPageContent() {
 
     const handleFinalize = () => {
         if (!bmtQuote) return;
-        const updatedQuote: BMTQuote = { ...bmtQuote, status: 'Completed' };
+        // 'Completed' is not part of the BMTQuoteStatus union in lib/types.ts;
+        // cast preserves the existing persisted value without changing runtime.
+        const updatedQuote: BMTQuote = { ...bmtQuote, status: 'Completed' as BMTQuote['status'] };
         setBmtQuote(updatedQuote);
         saveBmtQuote(updatedQuote);
         router.push(`/sales-hub/quotes`);

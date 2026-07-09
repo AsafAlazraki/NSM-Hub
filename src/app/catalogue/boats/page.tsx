@@ -40,6 +40,13 @@ const multiModelSchema = z.object({
 });
 type MultiModelFormValues = z.infer<typeof multiModelSchema>;
 
+const brandFormSchema = z.object({
+  name: z.string().min(1, "Brand name is required."),
+  logo: z.string().optional(),
+  logoFile: z.instanceof(File).optional(),
+});
+type BrandFormValues = z.infer<typeof brandFormSchema>;
+
 
 // Form Dialog for Brand, Range
 const EntryFormDialog = ({
@@ -170,6 +177,79 @@ const MultiModelFormDialog = ({
     );
 };
 
+
+// Form Dialog for Brand (name + logo upload)
+const BrandFormDialog = ({ isOpen, setIsOpen, onSave, initialData }: { isOpen: boolean, setIsOpen: (open: boolean) => void, onSave: (data: BrandFormValues) => void, initialData?: BoatBrand | null }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const form = useForm<BrandFormValues>({
+        resolver: zodResolver(brandFormSchema),
+        defaultValues: { name: initialData?.name || '', logo: initialData?.logo || undefined, logoFile: undefined },
+    });
+
+    useEffect(() => {
+        if(isOpen) form.reset({ name: initialData?.name || '', logo: initialData?.logo || undefined, logoFile: undefined });
+    }, [initialData, isOpen, form]);
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            form.setValue('logoFile', file, { shouldDirty: true });
+            const reader = new FileReader();
+            reader.onloadend = () => form.setValue('logo', reader.result as string, { shouldDirty: true });
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const onSubmit = (data: BrandFormValues) => {
+        onSave(data);
+        setIsOpen(false);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+                <DialogHeader><DialogTitle>{initialData?.id ? 'Edit' : 'Add'} Brand</DialogTitle></DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField control={form.control} name="name" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Brand Name</FormLabel>
+                                <FormControl><Input {...field} autoFocus /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormItem>
+                            <FormLabel>Brand Logo</FormLabel>
+                             <div className="flex items-center gap-4">
+                                {form.watch('logo') && (
+                                    <img src={form.watch('logo')} alt="Brand logo preview" className="h-16 w-auto object-contain border rounded-md" />
+                                )}
+                                 <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                    accept="image/png, image/jpeg, image/svg+xml, image/webp"
+                                />
+                                <Button type="button" variant="outline" onClick={handleUploadClick}>
+                                    <Upload className="mr-2 h-4 w-4"/> Upload Logo
+                                </Button>
+                             </div>
+                        </FormItem>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                            <Button type="submit">Save</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    )
+}
 
 function BoatsCataloguePageContent() {
     const [brands, setBrands] = useState<BoatBrand[]>([]);
