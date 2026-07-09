@@ -7,11 +7,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { getBookingApplication, updateBookingApplicationStatus } from '@/lib/booking-application-storage';
+import { getBookingApplication, updateBookingApplicationStatus, deleteBookingApplication } from '@/lib/booking-application-storage';
 import { BookingApplication, BookingApplicationStatus } from '@/lib/types';
 import { BookingForm } from '@/components/booking/BookingForm';
 import { getStaticLogo } from '@/lib/storage';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
+import { ArrowLeft, ChevronDown, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -19,6 +20,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -56,6 +68,7 @@ export default function BookingApplicationPage() {
   const router = useRouter();
   const accessKeyFromUrl = params.accessKey as string;
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const [application, setApplication] = useState<BookingApplication | null>(null);
   const [loading, setLoading] = useState(true);
@@ -113,6 +126,25 @@ export default function BookingApplicationPage() {
   }
 
 
+  const handleDelete = async () => {
+    if (!application) return;
+    try {
+        const success = await deleteBookingApplication(application.id!);
+        if (!success) throw new Error("Failed to delete application in database.");
+        toast({
+            title: "Application Deleted",
+            description: "The booking application has been moved to the bin.",
+        });
+        router.push('/service-hub/bookings');
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: "Deletion Failed",
+            description: "Could not delete the application.",
+        });
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -129,20 +161,46 @@ export default function BookingApplicationPage() {
             <Button asChild variant="outline">
                 <Link href="/service-hub/bookings"><ArrowLeft /> Back to Applications</Link>
             </Button>
-             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
-                        Status: <Badge className={cn("ml-2", statusClassMap[application.status])}>{application.status}</Badge> <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    {statusOrder.map(status => (
-                        <DropdownMenuItem key={status} onSelect={() => handleStatusChange(status)}>
-                            {status}
-                        </DropdownMenuItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
+             <div className="flex items-center gap-2">
+                {user && (
+                    <>
+                        <Button asChild>
+                            <Link href={`/service-hub/bookings/${application.id}/edit`}><Edit /> Edit</Link>
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive"><Trash2 /> Delete</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete this application?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will move the booking application to the bin. You can restore it later from the archived view.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </>
+                )}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline">
+                            Status: <Badge className={cn("ml-2", statusClassMap[application.status])}>{application.status}</Badge> <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {statusOrder.map(status => (
+                            <DropdownMenuItem key={status} onSelect={() => handleStatusChange(status)}>
+                                {status}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
             <Card className="w-full max-w-4xl mx-auto">
