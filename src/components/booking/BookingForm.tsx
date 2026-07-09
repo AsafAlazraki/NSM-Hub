@@ -185,7 +185,8 @@ export function BookingForm({ formId, logo, initialData }: BookingFormProps) {
 
   const sendNotificationEmail = (data: BookingFormValues, id: string) => {
     // Fire-and-forget: a failed notification must never break the customer's
-    // submission experience.
+    // submission experience. The server route no-ops unless
+    // BOOKING_NOTIFICATIONS_ENABLED is set to "true" (feature currently parked).
     fetch('/api/booking-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
