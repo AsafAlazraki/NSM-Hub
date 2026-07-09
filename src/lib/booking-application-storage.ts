@@ -50,13 +50,10 @@ export async function createBookingApplication(data: Omit<BookingApplication, 'i
     // Perform a single `setDoc` operation with the new ID
     await setDoc(doc(db, BOOKING_APPLICATIONS_COLLECTION, newId), newApplicationData);
 
-    // Fetch the newly created document to return it
-    const savedDoc = await getDoc(doc(db, BOOKING_APPLICATIONS_COLLECTION, newId));
-    if (savedDoc.exists()) {
-        const savedData = savedDoc.data() as BookingApplication;
-        return { id: savedDoc.id, ...savedData };
-    }
-    return null;
+    // Return the data we just wrote instead of reading it back: the public
+    // form runs unauthenticated, and the security rules only allow anonymous
+    // users to create documents, not read them.
+    return { id: newId, ...newApplicationData };
 
   } catch (error) {
     console.error("Error creating booking application:", error);

@@ -5,3 +5,18 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+env:
+  # Resend API key for booking notification emails. Create the secret BEFORE
+  # deploying (rollouts fail if it is missing):
+  #   firebase apphosting:secrets:set RESEND_API_KEY --project nsm-service-quotation
+  - variable: RESEND_API_KEY
+    secret: RESEND_API_KEY
+
+  # Resend only delivers from the default onboarding@resend.dev sender to the
+  # account owner's own address. Once nsmaine.com.au is verified at
+  # https://resend.com/domains, switch these to:
+  #   BOOKING_NOTIFICATION_TO:   service@nsmaine.com.au (or remove; it is the code default)
+  #   BOOKING_NOTIFICATION_FROM: e.g. "NSM Bookings <bookings@nsmaine.com.au>"
+  - variable: BOOKING_NOTIFICATION_TO
+    value: asafa1@northsidemarine.com.au
