@@ -160,6 +160,24 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
     }
   };
 
+  const handleRevertToVersion = async (historicalQuote: Quote) => {
+    // Graft the historical version's content onto the CURRENT quote before
+    // versioning, so the revert archives the live version (not the already
+    // archived historical one, which would leave two active versions) and
+    // keeps the quote's current owner instead of resurrecting the owner it
+    // had back then.
+    const revertedQuote: Quote = {
+        ...quote,
+        customer: historicalQuote.customer,
+        boat: historicalQuote.boat,
+        motors: historicalQuote.motors,
+        trailer: historicalQuote.trailer,
+        operations: historicalQuote.operations,
+        estimateType: historicalQuote.estimateType,
+    };
+    await handleCreateNewVersion(revertedQuote);
+  };
+
   const handleUserReassign = (userId: string) => {
     const userToReassign = allUsers.find(u => u.uid === userId);
     if(userToReassign) {
@@ -774,7 +792,7 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleCreateNewVersion(hq)}>
+                                                        <AlertDialogAction onClick={() => handleRevertToVersion(hq)}>
                                                           Revert & Create New Version
                                                         </AlertDialogAction>
                                                     </AlertDialogFooter>
