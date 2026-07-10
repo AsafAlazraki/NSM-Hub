@@ -23,6 +23,10 @@ import StepReview from './form-steps/StepReview';
 
 // Schemas for each step
 const customerSchema = z.object({
+  location: z.enum(['Boondall', 'Coomera'], {
+    required_error: 'Please choose an NSM location.',
+    invalid_type_error: 'Please choose an NSM location.',
+  }),
   customerName: z.string().min(1, 'Full name is required.'),
   customerAddress: z.string().optional(),
   customerMobileNumber: z.string().min(1, 'Mobile number is required.'),
@@ -125,6 +129,7 @@ export function BookingForm({ formId, logo, initialData }: BookingFormProps) {
     resolver: zodResolver(bookingFormSchema),
     mode: 'onChange',
     defaultValues: initialData ? {
+      location: initialData.location,
       customerName: initialData.customerName || '',
       customerAddress: initialData.customerAddress || '',
       customerMobileNumber: initialData.customerMobileNumber || '',
@@ -152,7 +157,7 @@ export function BookingForm({ formId, logo, initialData }: BookingFormProps) {
     let fieldsToValidate: (keyof BookingFormValues)[] = [];
     switch (currentStep) {
         case 1:
-            fieldsToValidate = ['customerName', 'customerMobileNumber', 'customerEmail'];
+            fieldsToValidate = ['location', 'customerName', 'customerMobileNumber', 'customerEmail'];
             break;
         case 2:
             fieldsToValidate = [

@@ -211,6 +211,7 @@ export default function BookingApplicationPage() {
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
 
                 <Section title="Customer Details">
+                    <DetailItem label="NSM Location" value={application.location} />
                     <DetailItem label="Full Name" value={application.customerName} />
                     <DetailItem label="Mobile Number" value={application.customerMobileNumber} />
                     <DetailItem label="Email Address" value={application.customerEmail} />

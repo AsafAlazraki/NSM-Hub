@@ -38,6 +38,7 @@ export default function StepReview({ setStep }: { setStep: (step: number) => voi
 
       <Section title="Customer Details" onEdit={() => setStep(1)}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <SummaryItem label="NSM Location" value={data.location} />
           <SummaryItem label="Full Name" value={data.customerName} />
           <SummaryItem label="Mobile Number" value={data.customerMobileNumber} />
           <SummaryItem label="Email Address" value={data.customerEmail} />
