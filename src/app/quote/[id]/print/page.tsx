@@ -167,6 +167,14 @@ export default function PrintQuotePage() {
                   <p><strong>Estimate #:</strong> {displayId}</p>
                   {quote.user?.ref && <p><strong>Job Card #:</strong> {quote.user.ref}</p>}
                   {quote.boat?.insuranceRef && <p><strong>Insurance Ref:</strong> {quote.boat.insuranceRef}</p>}
+                  {quote.insuranceCompany?.name && (
+                    <>
+                      <p><strong>Insurer:</strong> {quote.insuranceCompany.name}</p>
+                      {quote.insuranceCompany.abn && <p className="text-gray-600">ABN: {quote.insuranceCompany.abn}</p>}
+                      {quote.insuranceCompany.email && <p className="text-gray-600">{quote.insuranceCompany.email}</p>}
+                      {quote.insuranceCompany.phone && <p className="text-gray-600">{quote.insuranceCompany.phone}</p>}
+                    </>
+                  )}
               </div>
           </div>
 

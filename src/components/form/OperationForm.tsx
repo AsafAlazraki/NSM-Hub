@@ -135,7 +135,7 @@ export const OperationForm = ({ onSave, onCancel, initialData }: OperationFormPr
         name: part.name,
         cost: part.cost,
         quantity: 1,
-        costIncGst: part.cost * 1.1,
+        costIncGst: part.costIncGst ?? Number((part.cost * 1.1).toFixed(2)),
     })
   }
 

@@ -38,6 +38,7 @@ export const PartsCatalogueDialog = ({ isOpen, setIsOpen, onAdd }: PartsCatalogu
     const cataloguePart: CataloguePart = {
         name: part.name,
         cost: part.sellPrice, // Assuming sellPrice from dealer fit should be cost in quote
+        costIncGst: Number(((part.sellPrice || 0) * 1.1).toFixed(2)),
         quantity: 1
     }
     onAdd(cataloguePart);

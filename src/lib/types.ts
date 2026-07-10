@@ -5,7 +5,8 @@ import { Timestamp } from 'firebase/firestore';
 export interface Part {
   id: string;
   name: string;
-  cost: number;
+  cost: number; // ex. GST
+  costIncGst?: number; // cost * 1.1, kept in sync by the part editors
   quantity?: number;
 }
 
@@ -21,7 +22,8 @@ export interface Operation {
 
 export interface CataloguePart {
   name: string;
-  cost: number;
+  cost: number; // ex. GST
+  costIncGst?: number;
   quantity?: number;
 }
 
@@ -88,6 +90,13 @@ export interface UserProfile {
 
 export type EstimateType = 'Installation' | 'Insurance' | 'Mechanical Estimate';
 
+export interface InsuranceCompany {
+  name: string;
+  email?: string;
+  phone?: string;
+  abn?: string;
+}
+
 export type QuoteStatus = 'Work In Progress' | 'Estimate' | 'Pending' | 'Approved' | 'Complete' | 'Cancelled' | 'Deleted';
 
 export interface Quote {
@@ -105,6 +114,7 @@ export interface Quote {
   version: number;
   history: string[];
   estimateType?: EstimateType;
+  insuranceCompany?: InsuranceCompany | null;
 }
 
 export interface ChecklistItem {
