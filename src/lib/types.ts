@@ -401,9 +401,12 @@ export interface DiagnosticReport {
 
 export type BookingApplicationStatus = 'Awaiting Confirmation' | 'Contacted' | 'Booked' | 'Declined' | 'Completed';
 
+export type NsmBranch = 'Boondall' | 'Coomera';
+
 export interface BookingApplication {
   id?: string; // Firestore document ID (will also be the accessKey)
   accessKey: string; // Unique, non-guessable key for public access (same as id)
+  location?: NsmBranch; // Which NSM branch the customer wants to visit
   
   // Customer Details
   customerName: string;

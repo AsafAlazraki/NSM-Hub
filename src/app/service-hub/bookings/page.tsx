@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
-import { ArrowLeft, Archive, Calendar, Copy, Edit, MoreVertical, PlusCircle, Search, Ship, Trash2, ArchiveRestore, Wrench } from 'lucide-react';
+import { ArrowLeft, Archive, Calendar, Copy, Edit, MapPin, MoreVertical, PlusCircle, Search, Ship, Trash2, ArchiveRestore, Wrench } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
     getAllBookingApplications,
@@ -21,7 +21,7 @@ import {
     permanentlyDeleteBookingApplications,
 } from '@/lib/booking-application-storage';
 import { getStaticLogo, getUserProfile } from '@/lib/storage';
-import type { BookingApplication, BookingApplicationStatus, UserProfile } from '@/lib/types';
+import type { BookingApplication, BookingApplicationStatus, NsmBranch, UserProfile } from '@/lib/types';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { UserProfileDialog } from '@/components/UserProfileDialog';
 import { getAuth, signOut } from 'firebase/auth';
@@ -117,6 +117,12 @@ const ApplicationCard = ({ application, onStatusChange, onDelete, onRestore, isS
                 </div>
             </CardHeader>
             <CardContent className={cn('flex-1 space-y-3', isSelectionMode && 'pl-10')}>
+                {application.location && (
+                    <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span>{application.location}</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="w-4 h-4 shrink-0" />
                     <span>Submitted {application.createdAt ? format(application.createdAt.toDate(), 'MMMM d, yyyy') : 'N/A'}</span>
@@ -210,6 +216,7 @@ function BookingsPageContent() {
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<BookingApplicationStatus | 'All'>('All');
+    const [locationFilter, setLocationFilter] = useState<NsmBranch | 'All'>('All');
     const [openClosedFilter, setOpenClosedFilter] = useState<'All' | 'Open' | 'Closed'>('All');
     const [showArchived, setShowArchived] = useState(false);
     const [selectedApplications, setSelectedApplications] = useState<string[]>([]);
@@ -218,6 +225,7 @@ function BookingsPageContent() {
         if (typeof window !== 'undefined' && user) {
             setSearchTerm(sessionStorage.getItem('bookingSearchTerm') || '');
             setStatusFilter((sessionStorage.getItem('bookingStatusFilter') || 'All') as BookingApplicationStatus | 'All');
+            setLocationFilter((sessionStorage.getItem('bookingLocationFilter') || 'All') as NsmBranch | 'All');
             setOpenClosedFilter((sessionStorage.getItem('bookingOpenClosedFilter') || 'All') as 'All' | 'Open' | 'Closed');
             setIsInitialLoad(false);
         }
@@ -230,6 +238,10 @@ function BookingsPageContent() {
     useEffect(() => {
         if (!isInitialLoad) sessionStorage.setItem('bookingStatusFilter', statusFilter);
     }, [statusFilter, isInitialLoad]);
+
+    useEffect(() => {
+        if (!isInitialLoad) sessionStorage.setItem('bookingLocationFilter', locationFilter);
+    }, [locationFilter, isInitialLoad]);
 
     useEffect(() => {
         if (!isInitialLoad) sessionStorage.setItem('bookingOpenClosedFilter', openClosedFilter);
@@ -352,6 +364,9 @@ function BookingsPageContent() {
             if (statusFilter !== 'All') {
                 filtered = filtered.filter(app => app.status === statusFilter);
             }
+            if (locationFilter !== 'All') {
+                filtered = filtered.filter(app => app.location === locationFilter);
+            }
             if (openClosedFilter === 'Open') {
                 filtered = filtered.filter(app => openStatuses.includes(app.status));
             } else if (openClosedFilter === 'Closed') {
@@ -363,6 +378,7 @@ function BookingsPageContent() {
             const lowercasedFilter = searchTerm.toLowerCase();
             const searchInString = (value: string | undefined | null) => !!value && value.toLowerCase().includes(lowercasedFilter);
             filtered = filtered.filter(app =>
+                searchInString(app.location) ||
                 searchInString(app.customerName) ||
                 searchInString(app.customerEmail) ||
                 searchInString(app.customerMobileNumber) ||
@@ -384,7 +400,7 @@ function BookingsPageContent() {
         }
 
         return filtered;
-    }, [activeApplications, archivedApplications, showArchived, statusFilter, openClosedFilter, searchTerm]);
+    }, [activeApplications, archivedApplications, showArchived, statusFilter, locationFilter, openClosedFilter, searchTerm]);
 
     const handleArchiveClick = () => {
         setShowArchived(prev => !prev);
@@ -459,7 +475,7 @@ function BookingsPageContent() {
                             </Button>
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                         <div className="lg:col-span-2">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -481,6 +497,18 @@ function BookingsPageContent() {
                                     {statusOrder.map(status => (
                                         <SelectItem key={status} value={status}>{status} ({statusCounts[status]})</SelectItem>
                                     ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            <Select value={locationFilter} onValueChange={(value: NsmBranch | 'All') => setLocationFilter(value)}>
+                                <SelectTrigger className="h-12 text-base md:text-sm" disabled={showArchived}>
+                                    <SelectValue placeholder="Filter by Location" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="All">All Locations</SelectItem>
+                                    <SelectItem value="Boondall">Boondall</SelectItem>
+                                    <SelectItem value="Coomera">Coomera</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

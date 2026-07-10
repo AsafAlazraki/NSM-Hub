@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
         <h2 style="margin:0 0 4px;">New Booking Application</h2>
         <p style="margin:0 0 16px;color:#64748b;">A customer has submitted a booking application via the online form.</p>
         ${section('Customer', [
+            row('NSM Location', application.location),
             row('Name', application.customerName),
             row('Mobile', application.customerMobileNumber),
             row('Email', application.customerEmail),
