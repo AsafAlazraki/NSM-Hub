@@ -328,6 +328,7 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
           id: newId,
           user: { ...(quote.user || {}), ref: data.ourRef } as any,
           boat: { ...(quote.boat || {}), insuranceRef: data.insuranceRef } as any,
+          insuranceCompany: data.insuranceCompany,
       };
 
       try {
@@ -402,7 +403,11 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
         customerNotes: '', // Add empty customer notes
         laborRate: catOp.laborRate,
         laborHours: catOp.laborHours,
-        parts: (catOp.parts || []).map(p => ({...p, id: `part-${Date.now()}-${Math.random()}`}))
+        parts: (catOp.parts || []).map(p => ({
+            ...p,
+            id: `part-${Date.now()}-${Math.random()}`,
+            costIncGst: p.costIncGst ?? Number(((p.cost || 0) * 1.1).toFixed(2)),
+        }))
       }));
 
       const updatedQuote = { ...quote, operations: [...(quote.operations || []), ...newOpsFromCatalogue] };
@@ -442,7 +447,8 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
             onSave={handleSaveReferences}
             initialData={{
                 ourRef: quote.user?.ref,
-                insuranceRef: quote.boat?.insuranceRef
+                insuranceRef: quote.boat?.insuranceRef,
+                insuranceCompany: quote.insuranceCompany,
             }}
         />
         <EditCustomerAssetDialog
@@ -552,6 +558,14 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
                              <div className="space-y-1">
                                 <p><strong>Job Card #:</strong> {quote.user?.ref || '-'}</p>
                                 <p><strong>Insurance Ref #:</strong> {quote.boat?.insuranceRef || '-'}</p>
+                                <p><strong>Insurer:</strong> {quote.insuranceCompany?.name || '-'}</p>
+                                {quote.insuranceCompany && (
+                                    <div className="text-sm text-muted-foreground pl-1 space-y-0.5">
+                                        {quote.insuranceCompany.abn && <p>ABN: {quote.insuranceCompany.abn}</p>}
+                                        {quote.insuranceCompany.email && <p>{quote.insuranceCompany.email}</p>}
+                                        {quote.insuranceCompany.phone && <p>{quote.insuranceCompany.phone}</p>}
+                                    </div>
+                                )}
                             </div>
                             <Separator />
                              <div>
@@ -728,7 +742,10 @@ export const QuoteView = ({ quote: initialQuote }: { quote: Quote }) => {
                                                 )}
                                                 {op.parts?.map(p => (
                                                     <div key={p.id} className="flex justify-between items-center text-muted-foreground ml-4">
-                                                        <span>{p.quantity || 1} x {p.name || 'N/A'} @ {formatCurrency(p.cost || 0)}</span>
+                                                        <span>
+                                                            {p.quantity || 1} x {p.name || 'N/A'} @ {formatCurrency(p.cost || 0)}
+                                                            {p.costIncGst ? ` (${formatCurrency(p.costIncGst)} inc. GST)` : ''}
+                                                        </span>
                                                         <span className="font-medium text-right w-28">{formatCurrency((p.cost || 0) * (p.quantity || 1))}</span>
                                                     </div>
                                                 ))}
