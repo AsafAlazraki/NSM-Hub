@@ -126,6 +126,7 @@ export default function PrintQuotePage() {
   const isTrailerSectionVisible = quote.trailer?.make || quote.trailer?.model || quote.trailer?.registration;
 
   const isAssetDetailsVisible = isBoatSectionVisible || isMotorSectionVisible || isTrailerSectionVisible;
+  const isChargeToVisible = !!quote.insuranceCompany?.name;
   
   const displayId = formatQuoteId(quote.id);
   const headingText = "Service Estimate";
@@ -166,21 +167,30 @@ export default function PrintQuotePage() {
                   <p><strong>Date:</strong> {quote.createdAt ? format(new Date(quote.createdAt), 'dd/MM/yyyy') : 'N/A'}</p>
                   <p><strong>Estimate #:</strong> {displayId}</p>
                   {quote.user?.ref && <p><strong>Job Card #:</strong> {quote.user.ref}</p>}
-                  {quote.boat?.insuranceRef && <p><strong>Insurance Ref:</strong> {quote.boat.insuranceRef}</p>}
-                  {quote.insuranceCompany?.name && (
-                    <>
-                      <p><strong>Insurer:</strong> {quote.insuranceCompany.name}</p>
-                      {quote.insuranceCompany.abn && <p className="text-gray-600">ABN: {quote.insuranceCompany.abn}</p>}
-                      {quote.insuranceCompany.email && <p className="text-gray-600">{quote.insuranceCompany.email}</p>}
-                      {quote.insuranceCompany.phone && <p className="text-gray-600">{quote.insuranceCompany.phone}</p>}
-                    </>
-                  )}
+                  {!quote.insuranceCompany?.name && quote.boat?.insuranceRef && <p><strong>Insurance Ref:</strong> {quote.boat.insuranceRef}</p>}
               </div>
           </div>
 
-          {/* Customer & Asset Details */}
-          {(isCustomerSectionVisible || isAssetDetailsVisible) && (
-              <div className={cn("grid gap-4 mt-2", isCustomerSectionVisible && isAssetDetailsVisible ? "grid-cols-2" : "grid-cols-1")}>
+          {/* Charge To (insurer), Customer & Asset Details */}
+          {(isChargeToVisible || isCustomerSectionVisible || isAssetDetailsVisible) && (
+              <div className={cn(
+                  "grid gap-4 mt-2",
+                  [isChargeToVisible, isCustomerSectionVisible, isAssetDetailsVisible].filter(Boolean).length === 3
+                      ? "grid-cols-3"
+                      : [isChargeToVisible, isCustomerSectionVisible, isAssetDetailsVisible].filter(Boolean).length === 2
+                          ? "grid-cols-2"
+                          : "grid-cols-1"
+              )}>
+                  {isChargeToVisible && (
+                      <div className="bg-gray-50 p-3 rounded-lg text-sm">
+                          <h3 className="font-headline font-semibold text-primary border-b border-gray-200 pb-1 mb-2">Charge To</h3>
+                          <p className="font-semibold">{quote.insuranceCompany!.name}</p>
+                          {quote.boat?.insuranceRef && <p className="mt-1"><strong>Claim #:</strong> {quote.boat.insuranceRef}</p>}
+                          {quote.insuranceCompany!.abn && <p className="mt-1"><strong>ABN:</strong> {quote.insuranceCompany!.abn}</p>}
+                          {quote.insuranceCompany!.email && <p className="mt-1"><strong>Email:</strong> {quote.insuranceCompany!.email}</p>}
+                          {quote.insuranceCompany!.phone && <p className="mt-1"><strong>Phone:</strong> {quote.insuranceCompany!.phone}</p>}
+                      </div>
+                  )}
                   {isCustomerSectionVisible && (
                       <div className="bg-gray-50 p-3 rounded-lg text-sm">
                           <h3 className="font-headline font-semibold text-primary border-b border-gray-200 pb-1 mb-2">Customer</h3>
