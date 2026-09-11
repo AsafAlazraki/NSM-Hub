@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,8 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Trash2, PlusCircle, Sparkles, Loader2, Save, XCircle, BookMarked } from 'lucide-react';
+import { Trash2, PlusCircle, Sparkles, Loader2, Save, XCircle, BookMarked, FileUp } from 'lucide-react';
 import { generateOperationDescription } from '@/ai/flows/generate-operation-description';
+import { extractPartsFromDocument } from '@/ai/flows/extract-parts-from-document';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { PartsCatalogueDialog } from './PartsCatalogueDialog';
@@ -49,7 +50,9 @@ export const OperationForm = ({ onSave, onCancel, initialData }: OperationFormPr
   const isEditMode = !!initialData?.id;
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isImportingParts, setIsImportingParts] = useState(false);
   const [isPartsCatalogueOpen, setIsPartsCatalogueOpen] = useState(false);
+  const partsFileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<OperationFormValues>({
     resolver: zodResolver(operationSchema),
@@ -138,6 +141,79 @@ export const OperationForm = ({ onSave, onCancel, initialData }: OperationFormPr
         costIncGst: part.costIncGst ?? Number((part.cost * 1.1).toFixed(2)),
     })
   }
+
+  const handlePartsDocumentSelected = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Reset the input so selecting the same file again re-triggers this handler.
+    event.target.value = '';
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+        toast({
+            variant: "destructive",
+            title: "File Too Large",
+            description: "Please upload a document under 8MB.",
+        });
+        return;
+    }
+
+    setIsImportingParts(true);
+    try {
+        const documentDataUri = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+        });
+
+        const result = await extractPartsFromDocument({ documentDataUri });
+
+        if (!result.parts.length) {
+            toast({
+                variant: "destructive",
+                title: "No Parts Found",
+                description: "Couldn't find any part line items in that document.",
+            });
+            return;
+        }
+
+        result.parts.forEach((part) => {
+            const name = part.partNumber ? `${part.partNumber} - ${part.description}` : part.description;
+            let cost = 0;
+            let costIncGst = 0;
+            if (part.unitPrice != null) {
+                if (result.pricesIncludeGst) {
+                    costIncGst = part.unitPrice;
+                    cost = Number((part.unitPrice / 1.1).toFixed(2));
+                } else {
+                    cost = part.unitPrice;
+                    costIncGst = Number((part.unitPrice * 1.1).toFixed(2));
+                }
+            }
+            append({
+                id: `part-${Date.now()}-${Math.random()}`,
+                name,
+                quantity: part.quantity || 1,
+                cost,
+                costIncGst,
+            });
+        });
+
+        toast({
+            title: "Parts Imported",
+            description: `Added ${result.parts.length} part${result.parts.length === 1 ? '' : 's'} from ${file.name}.`,
+        });
+    } catch (error) {
+        console.error("Failed to import parts from document:", error);
+        toast({
+            variant: "destructive",
+            title: "Import Failed",
+            description: "Could not read the parts from that document. Please try again.",
+        });
+    } finally {
+        setIsImportingParts(false);
+    }
+  };
 
   const handleCostChange = (index: number, value: number, field: 'cost' | 'costIncGst') => {
     if (isNaN(value)) return;
@@ -285,6 +361,23 @@ export const OperationForm = ({ onSave, onCancel, initialData }: OperationFormPr
                     <div className="flex items-center justify-between mb-2">
                     <Label className="font-semibold text-base">Parts</Label>
                     <div className="flex gap-2">
+                        <input
+                            ref={partsFileInputRef}
+                            type="file"
+                            accept="application/pdf,image/png,image/jpeg,image/webp"
+                            className="hidden"
+                            onChange={handlePartsDocumentSelected}
+                        />
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => partsFileInputRef.current?.click()}
+                            disabled={isImportingParts}
+                            >
+                            {isImportingParts ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileUp className="h-4 w-4 mr-2" />}
+                            {isImportingParts ? 'Importing...' : 'Import from Document'}
+                        </Button>
                         <Button
                             type="button"
                             variant="secondary"

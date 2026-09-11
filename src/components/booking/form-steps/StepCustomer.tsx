@@ -62,7 +62,7 @@ export default function StepCustomer() {
             <FormField control={control} name="customerName" render={({ field }) => ( <FormItem><FormLabel>Full Name<Req /></FormLabel><FormControl><Input className={inputClass} autoComplete="name" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={control} name="customerMobileNumber" render={({ field }) => ( <FormItem><FormLabel>Mobile Number<Req /></FormLabel><FormControl><Input className={inputClass} type="tel" autoComplete="tel" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
         </div>
-        <FormField control={control} name="customerAddress" render={({ field }) => ( <FormItem><FormLabel>Address (Optional)</FormLabel><FormControl><Input className={inputClass} autoComplete="street-address" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
+        <FormField control={control} name="customerAddress" render={({ field }) => ( <FormItem><FormLabel>Address<Req /></FormLabel><FormControl><Input className={inputClass} autoComplete="street-address" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
         <FormField control={control} name="customerEmail" render={({ field }) => ( <FormItem><FormLabel>Email Address<Req /></FormLabel><FormControl><Input className={inputClass} type="email" autoComplete="email" {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
         </div>
     </div>

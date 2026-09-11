@@ -28,7 +28,7 @@ const customerSchema = z.object({
     invalid_type_error: 'Please choose an NSM location.',
   }),
   customerName: z.string().min(1, 'Full name is required.'),
-  customerAddress: z.string().optional(),
+  customerAddress: z.string().min(1, 'Address is required.'),
   customerMobileNumber: z.string().min(1, 'Mobile number is required.'),
   customerEmail: z.string().email('Invalid email address.').min(1, 'Email address is required.'),
 });
@@ -157,7 +157,7 @@ export function BookingForm({ formId, logo, initialData }: BookingFormProps) {
     let fieldsToValidate: (keyof BookingFormValues)[] = [];
     switch (currentStep) {
         case 1:
-            fieldsToValidate = ['location', 'customerName', 'customerMobileNumber', 'customerEmail'];
+            fieldsToValidate = ['location', 'customerName', 'customerAddress', 'customerMobileNumber', 'customerEmail'];
             break;
         case 2:
             fieldsToValidate = [
