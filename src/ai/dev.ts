@@ -10,3 +10,4 @@ config();
 import '@/ai/flows/generate-polished-pdf.ts';
 import '@/ai/flows/generate-operation-description.ts';
 import '@/ai/flows/analyze-diagnostic-report.ts';
+import '@/ai/flows/extract-parts-from-document.ts';
