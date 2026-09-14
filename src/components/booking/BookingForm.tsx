@@ -148,7 +148,28 @@ export function BookingForm({ formId, logo, initialData }: BookingFormProps) {
       workToBePerformed: initialData.workToBePerformed || '',
       bookingDateRequested: initialData.bookingDateRequested || '',
       dateRequiredForCollection: initialData.dateRequiredForCollection || '',
-    } : undefined,
+    } : {
+      // Empty-string defaults so untouched fields fail validation with the
+      // schema's own messages instead of zod's generic "Required".
+      customerName: '',
+      customerAddress: '',
+      customerMobileNumber: '',
+      customerEmail: '',
+      boatMake: '',
+      boatModel: '',
+      boatHin: '',
+      boatRegistrationNumber: '',
+      engineMake: '',
+      engineModel: '',
+      engineSerialNumber: '',
+      trailerMake: '',
+      trailerModel: '',
+      trailerVin: '',
+      trailerRegistration: '',
+      workToBePerformed: '',
+      bookingDateRequested: '',
+      dateRequiredForCollection: '',
+    },
   });
 
   const { trigger } = methods;
