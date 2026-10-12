@@ -62,6 +62,13 @@ service cloud.firestore {
       allow get, list, create, update, delete: if isSignedIn();
     }
 
+    // The company logo is shown to anonymous customers on the public
+    // booking form, so it is readable without sign-in. Writes still go
+    // through the signed-in rule above.
+    match /settings/logo {
+      allow get: if true;
+    }
+
     // Booking Applications
     // The public booking form is submitted by anonymous customers, so
     // anyone may CREATE an application — but only as a fresh

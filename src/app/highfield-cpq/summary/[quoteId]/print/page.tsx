@@ -8,7 +8,7 @@ import { getBmtQuoteById, getBoatModelById, getCatalogueMotors, getRiggingKits, 
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Printer, ArrowLeft, X } from 'lucide-react';
-import { Logo, logoSvg } from '@/components/Logo';
+import { Logo } from '@/components/Logo';
 import { Separator } from '@/components/ui/separator';
 import { useParams } from 'next/navigation';
 
