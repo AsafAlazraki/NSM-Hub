@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { User, Ship, Wrench, Calendar, FileText, Printer, ArrowLeft, X } from 'lucide-react';
 import { format } from 'date-fns';
-import { logoSvg } from '@/components/Logo';
+import { defaultLogoHtml } from '@/components/Logo';
 import { getQuoteById, getStaticLogo } from '@/lib/storage';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter, useParams } from 'next/navigation';
@@ -154,7 +154,7 @@ export default function PrintQuotePage() {
                     {logoForPdf && !logoForPdf.startsWith('<svg') ? (
                         <img src={logoForPdf} alt="Company Logo" className="max-w-full max-h-full object-contain" />
                     ) : (
-                        <div dangerouslySetInnerHTML={{ __html: logoForPdf || logoSvg }} />
+                        <div dangerouslySetInnerHTML={{ __html: logoForPdf || defaultLogoHtml }} />
                     )}
                   </div>
                   <div className="text-[9px] text-primary mt-1">
