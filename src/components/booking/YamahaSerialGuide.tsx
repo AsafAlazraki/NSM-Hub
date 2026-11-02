@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -167,12 +168,16 @@ export const YamahaSerialGuideDialog = () => (
     </DialogTrigger>
     <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
       <DialogHeader className="text-left space-y-1">
-        <p className="text-xs font-extrabold uppercase tracking-widest text-blue-600">
+        <p className="text-xs font-extrabold uppercase tracking-widest text-blue-600" aria-hidden="true">
           Takes ten seconds
         </p>
         <DialogTitle className="font-headline text-2xl sm:text-3xl font-bold text-blue-700 leading-tight">
           Finding your serial &amp; model numbers
         </DialogTitle>
+        <DialogDescription className="sr-only">
+          A quick guide to locating the serial and model numbers on your Yamaha outboard&apos;s
+          transom bracket sticker.
+        </DialogDescription>
       </DialogHeader>
       <YamahaSerialGuideContent />
     </DialogContent>
