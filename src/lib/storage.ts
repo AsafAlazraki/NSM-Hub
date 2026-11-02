@@ -3,6 +3,7 @@ import type { Quote, UserProfile, Operation, Part, CatalogueOperation, Catalogue
 import { db } from '@/lib/firebase';
 import { collection, doc, getDoc, getDocs, setDoc, query, orderBy, where, writeBatch, deleteDoc, updateDoc, limit, addDoc, runTransaction, Timestamp } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadString, getDownloadURL, deleteObject, uploadBytes } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 import { v4 as uuidv4 } from 'uuid';
 import { compressImage } from '@/lib/utils';
 
@@ -66,6 +67,10 @@ export const saveStaticLogo = async (logoDataUrl: string) => {
 
 export const getStaticLogo = async (): Promise<string | null> => {
     try {
+        // Anonymous visitors (public booking pages) cannot read Firestore
+        // settings, so skip the fetch and let callers fall back to the
+        // bundled /nsm-logo.png instead of logging a permissions error.
+        if (!getAuth().currentUser) return null;
         const logoDocRef = doc(db, 'settings', 'logo');
         const docSnap = await getDoc(logoDocRef);
         if (docSnap.exists()) {
