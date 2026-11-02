@@ -5,6 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { YamahaSerialGuideDialog } from '../YamahaSerialGuide';
 
 const SectionHeader = ({ title }: { title: string }) => (
     <h3 className="text-lg font-semibold text-primary">{title}</h3>
@@ -32,7 +33,10 @@ export default function StepVessel() {
       <Separator />
 
        <div>
-        <SectionHeader title="Engine Details" />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+            <SectionHeader title="Engine Details" />
+            <YamahaSerialGuideDialog />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
             <FormField control={control} name="engineMake" render={({ field }) => ( <FormItem><FormLabel>Make<Req /></FormLabel><FormControl><Input className={inputClass} {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
             <FormField control={control} name="engineModel" render={({ field }) => ( <FormItem><FormLabel>Model<Req /></FormLabel><FormControl><Input className={inputClass} {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem> )} />
